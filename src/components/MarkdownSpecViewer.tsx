@@ -29,6 +29,37 @@ export const MarkdownSpecViewer: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const [downloadingRepo, setDownloadingRepo] = useState(false);
+  const [downloadError, setDownloadError] = useState('');
+
+  const handleDownloadRepo = async () => {
+    setDownloadingRepo(true);
+    setDownloadError('');
+    try {
+      const resp = await fetch('/api/download/repo.zip', { credentials: 'include' });
+      const contentType = resp.headers.get('content-type') || '';
+      if (!resp.ok || contentType.includes('text/html')) {
+        throw new Error('当前代理通道返回了非压缩包响应，请改用 git clone https://github.com/kzq0717/douyin.git 获取源码');
+      }
+      const blob = await resp.blob();
+      if (blob.size < 100 * 1024) {
+        throw new Error(`下载文件异常（仅 ${Math.round(blob.size / 1024)} KB），请使用 git clone 获取完整仓库`);
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'douyin-hongguo-v1.1-with-git.zip';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (err) {
+      setDownloadError(err instanceof Error ? err.message : '源码压缩包下载失败');
+    } finally {
+      setDownloadingRepo(false);
+    }
+  };
+
   const lines = OPTIMIZED_TECH_SPEC_MARKDOWN.split('\n');
 
   return (
@@ -80,16 +111,23 @@ export const MarkdownSpecViewer: React.FC = () => {
             <Download className="h-3.5 w-3.5" />
             下载 .md 方案
           </button>
-          <a
-            href="/api/download/repo.zip"
-            download="douyin-hongguo-v1.1-with-git.zip"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-medium text-white hover:bg-slate-800 whitespace-nowrap"
+          <button
+            type="button"
+            onClick={handleDownloadRepo}
+            disabled={downloadingRepo}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-50 whitespace-nowrap cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" />
-            下载完整源码 + Git (.zip)
-          </a>
+            {downloadingRepo ? '打包下载中...' : '下载完整源码 + Git (.zip)'}
+          </button>
         </div>
       </div>
+
+      {downloadError && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs text-rose-700">
+          {downloadError}
+        </div>
+      )}
 
       {viewMode === 'raw' ? (
         <pre className="overflow-x-auto rounded-xl border border-slate-200 bg-slate-900 p-6 font-mono text-xs text-slate-100 leading-relaxed whitespace-pre-wrap">
