@@ -8,3 +8,9 @@ coverage/
 !.env.example
 .playwright-cli/
 .aistudio/
+build_win/
+build_core/
+dist_win/
+*.db
+*.db-wal
+*.db-shm

@@ -63,7 +63,7 @@ export const MarkdownSpecViewer: React.FC = () => {
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={handleCopy}
@@ -75,11 +75,19 @@ export const MarkdownSpecViewer: React.FC = () => {
           <button
             type="button"
             onClick={handleDownload}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-medium text-white hover:bg-slate-800 whitespace-nowrap cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 whitespace-nowrap cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" />
             下载 .md 方案
           </button>
+          <a
+            href="/api/download/repo.zip"
+            download="douyin-hongguo-v1.1-with-git.zip"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-medium text-white hover:bg-slate-800 whitespace-nowrap"
+          >
+            <Download className="h-3.5 w-3.5" />
+            下载完整源码 + Git (.zip)
+          </a>
         </div>
       </div>
 

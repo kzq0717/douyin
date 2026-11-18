@@ -1,4 +1,7 @@
 import express from 'express';
+import { execFile } from 'child_process';
+import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -8,6 +11,62 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const ARCHIVE_PY_SCRIPT = `
+import os, sys, zipfile, tarfile
+
+root_dir = sys.argv[1]
+out_path = sys.argv[2]
+fmt = sys.argv[3]
+prefix = "douyin"
+
+EXCLUDE_DIRS = {"node_modules", "dist", "build_win", "build_core", "dist_win", ".playwright-cli", ".aistudio", "build", "coverage"}
+
+def should_skip_file(name):
+    if name.startswith(".env") and name != ".env.example":
+        return True
+    if name.endswith((".log", ".db", ".db-wal", ".db-shm")):
+        return True
+    return False
+
+def iter_files():
+    for dirpath, dirnames, filenames in os.walk(root_dir):
+        dirnames[:] = [d for d in dirnames if d not in EXCLUDE_DIRS]
+        for fname in filenames:
+            if should_skip_file(fname):
+                continue
+            full = os.path.join(dirpath, fname)
+            rel = os.path.relpath(full, root_dir)
+            yield full, os.path.join(prefix, rel)
+
+if fmt == "zip":
+    with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for full, arc in iter_files():
+            zf.write(full, arc)
+else:
+    with tarfile.open(out_path, "w:gz") as tf:
+        for full, arc in iter_files():
+            tf.add(full, arcname=arc)
+`;
+
+function buildRepoArchive(format: 'zip' | 'tar.gz'): Promise<string> {
+  const ext = format === 'zip' ? 'zip' : 'tar.gz';
+  const outPath = path.join(os.tmpdir(), `hongguo-douyin-repo-${Date.now()}.${ext}`);
+  return new Promise((resolve, reject) => {
+    execFile(
+      'python3',
+      ['-c', ARCHIVE_PY_SCRIPT, __dirname, outPath, format],
+      { timeout: 30000 },
+      (err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(outPath);
+      },
+    );
+  });
+}
 
 async function startServer() {
   const app = express();
@@ -49,6 +108,29 @@ async function startServer() {
       tokenExpiresAt: expiresAt,
       exchangedViaRelay: true,
     });
+  });
+
+  // 4. Download complete source code + .git repository archive
+  app.get('/api/download/repo.zip', async (_req, res) => {
+    try {
+      const archivePath = await buildRepoArchive('zip');
+      res.download(archivePath, 'douyin-hongguo-v1.1-with-git.zip', () => {
+        fs.unlink(archivePath, () => undefined);
+      });
+    } catch (err) {
+      res.status(500).json({ error: err instanceof Error ? err.message : '打包失败' });
+    }
+  });
+
+  app.get('/api/download/repo.tar.gz', async (_req, res) => {
+    try {
+      const archivePath = await buildRepoArchive('tar.gz');
+      res.download(archivePath, 'douyin-hongguo-v1.1-with-git.tar.gz', () => {
+        fs.unlink(archivePath, () => undefined);
+      });
+    } catch (err) {
+      res.status(500).json({ error: err instanceof Error ? err.message : '打包失败' });
+    }
   });
 
   if (process.env.NODE_ENV !== 'production') {

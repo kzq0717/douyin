@@ -1,0 +1,8 @@
+{
+  "rules": [
+    { "id": "burst_order", "metric": "order_count_1h", "op": ">=", "value": 3.0, "level": "critical", "cooldown_min": 30 },
+    { "id": "low_stock", "metric": "sku_stock", "op": "<=", "value": 20, "level": "warning", "cooldown_min": 60 },
+    { "id": "ship_timeout_risk", "metric": "risk_order_count", "op": ">=", "value": 3, "level": "critical", "cooldown_min": 15 },
+    { "id": "score_drop", "metric": "shop_score", "op": "<=", "value": -0.15, "level": "warning", "cooldown_min": 180 }
+  ]
+}

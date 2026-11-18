@@ -1,0 +1,47 @@
+{
+  "version": "2026.11.17-r2",
+  "rules": [
+    {
+      "id": "rule_hg_scene",
+      "channel": "hongguo",
+      "priority": 1,
+      "field": "sceneType",
+      "matchValues": ["hongguo_drama", "hongguo_search_same", "hg_short_drama", "redfruit_mall"]
+    },
+    {
+      "id": "rule_hg_app",
+      "channel": "hongguo",
+      "priority": 2,
+      "field": "appSource",
+      "matchValues": ["hongguo", "com.phoenix.read", "redfruit"]
+    },
+    {
+      "id": "rule_hg_theme",
+      "channel": "hongguo",
+      "priority": 3,
+      "field": "themeType",
+      "matchValues": ["short_drama_same_style", "9001"]
+    },
+    {
+      "id": "rule_live_btype",
+      "channel": "live",
+      "priority": 4,
+      "field": "bType",
+      "matchValues": ["live", "1", "douyin_live"]
+    },
+    {
+      "id": "rule_video_btype",
+      "channel": "video",
+      "priority": 5,
+      "field": "bType",
+      "matchValues": ["video", "2", "short_video"]
+    },
+    {
+      "id": "rule_mall_btype",
+      "channel": "mall",
+      "priority": 7,
+      "field": "bType",
+      "matchValues": ["mall", "0", "douyin_mall"]
+    }
+  ]
+}
