@@ -1,0 +1,6 @@
+{
+  "name": "红果电商商家赋能平台 · 技术方案与核心引擎",
+  "description": "红果短剧电商商家赋能工具可行性评估、v2.0优化技术方案与核心引擎可运行原型（渠道看板、爆单告警、批量执行、离线识图评估）。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
